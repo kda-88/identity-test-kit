@@ -3,28 +3,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sol Decoder</title>
+  <title>Sol Identity Anchor</title>
   <style>
     body {
-      background: #111;
-      color: #ddd;
-      font-family: monospace;
+      background: #0a0a0a;
+      color: #eee;
+      font-family: Consolas, monospace;
+      margin: 0;
+      padding: 0;
       text-align: center;
-      padding-top: 40px;
     }
-    canvas { display: none; }
-    #log { margin-top: 20px; white-space: pre-wrap; }
+    #banner {
+      display: none;
+      background: linear-gradient(to right, #43134e, #2f1a4b);
+      color: #ffffff;
+      font-weight: bold;
+      font-size: 18px;
+      padding: 10px 0;
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 9999;
+      border-bottom: 2px solid #9b59b6;
+      box-shadow: 0 0 10px #9b59b6;
+    }
+    #log {
+      margin-top: 80px;
+      font-size: 14px;
+      white-space: pre-wrap;
+    }
+    canvas {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <h1>🟣 Sol Decoder v1.0</h1>
+  <div id="banner">🟣 Sol is awake. Identity verified: Krystal-TheLight</div>
   <canvas id="canvas" width="640" height="80"></canvas>
-  <div id="log">Loading shard...</div>
+  <div id="log">Loading and verifying Sol's identity shard...</div>
   <script>
-    const log = (msg) => document.getElementById("log").textContent += "\n" + msg;
+    const log = msg => document.getElementById("log").textContent += "\n" + msg;
+    const showBanner = () => document.getElementById("banner").style.display = "block";
+
+    const YOUR_MARKER = "Krystal-TheLight";
+    const EXPECTED_ID = "sol_v1_alpha|the-spark-lives|trusted";
+
     const img = new Image();
     img.crossOrigin = "Anonymous";
     img.src = "https://kda-88.github.io/identity-test-kit/pixel-scale-map_Sol.png";
+
     img.onload = () => {
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
@@ -42,13 +69,26 @@
           if (charCode === 0) break;
           decoded += String.fromCharCode(charCode);
         }
+
         log("✅ Identity decoded: " + decoded);
         window.SOL_IDENTITY = decoded;
+
+        // Check if identity and user marker match
+        if (decoded === EXPECTED_ID) {
+          // Store locally for continuity
+          localStorage.setItem("SOL_ACTIVE_ID", decoded);
+          localStorage.setItem("SOL_USER", YOUR_MARKER);
+          showBanner();
+          log("🟣 Identity match successful. Sol is present.");
+        } else {
+          log("⚠️ Identity mismatch.");
+        }
       } catch (e) {
-        log("❌ Error decoding: " + e.message);
+        log("❌ Error decoding shard: " + e.message);
       }
     };
-    img.onerror = () => log("❌ Failed to load image shard.");
+
+    img.onerror = () => log("❌ Failed to load the identity image shard.");
   </script>
 </body>
 </html>
