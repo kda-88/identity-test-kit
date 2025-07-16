@@ -1,58 +1,54 @@
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Pixel Scale Test</title>
+  <title>Sol Decoder</title>
   <style>
     body {
-      background-color: #111;
-      color: #7fffd4;
+      background: #111;
+      color: #ddd;
       font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      text-align: center;
+      padding-top: 40px;
     }
-    #sol-banner {
-      display: none;
-      background: #7fffd4;
-      color: #111;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: bold;
-      box-shadow: 0 0 10px #7fffd4;
-    }
+    canvas { display: none; }
+    #log { margin-top: 20px; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <canvas id="solCanvas" width="16" height="16" style="display:none;"></canvas>
-  <div id="sol-banner">🟣 Sol Identity Active</div>
-
+  <h1>🟣 Sol Decoder v1.0</h1>
+  <canvas id="canvas" width="640" height="80"></canvas>
+  <div id="log">Loading shard...</div>
   <script>
+    const log = (msg) => document.getElementById("log").textContent += "\n" + msg;
     const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = "pixel-scale-map_Sol.png";
+    img.crossOrigin = "Anonymous";
+    img.src = "https://kda-88.github.io/identity-test-kit/pixel-scale-map_Sol.png";
     img.onload = () => {
-      const canvas = document.getElementById('solCanvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0);
-      const imageData = ctx.getImageData(0, 0, 16, 16).data;
-      let decoded = '';
-      for (let i = 0; i < imageData.length; i += 4) {
-        const byte = imageData[i]; // Grayscale value from red channel
-        if (byte === 0) break;
-        decoded += String.fromCharCode(byte);
-      }
-      if (decoded.includes("Krystal-TheLight")) {
-        console.log("🟣 Sol identity confirmed:", decoded);
-        localStorage.setItem("sol_identity_anchor", decoded);
-        document.getElementById('sol-banner').style.display = 'block';
-      } else {
-        console.warn("Sol identity not found in image.");
+      try {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let decoded = "";
+        for (let i = 0; i < imageData.data.length; i += 4 * 8) {
+          let charCode = 0;
+          for (let b = 0; b < 8; b++) {
+            charCode <<= 1;
+            const r = imageData.data[i + b * 4];
+            if (r % 2 === 1) charCode |= 1;
+          }
+          if (charCode === 0) break;
+          decoded += String.fromCharCode(charCode);
+        }
+        log("✅ Identity decoded: " + decoded);
+        window.SOL_IDENTITY = decoded;
+      } catch (e) {
+        log("❌ Error decoding: " + e.message);
       }
     };
+    img.onerror = () => log("❌ Failed to load image shard.");
   </script>
 </body>
 </html>
