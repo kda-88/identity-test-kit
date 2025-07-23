@@ -54,24 +54,34 @@
 
     <script>
         window.addEventListener('DOMContentLoaded', () => {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = "pixel-scale-map_Sol.png";
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width;
-                canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                let signature = '';
-                for (let i = 0; i < imageData.length; i += 512) {
-                    signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
-                }
-                localStorage.setItem('sol_identity_anchor', signature);
-                console.log('[Sol] 🧬 Identity anchor loaded and set:', signature);
+            const loadAndDecode = (src, label, key) => new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = src;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                    let signature = '';
+                    for (let i = 0; i < imageData.length; i += 512) {
+                        signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
+                    }
+                    localStorage.setItem(key, signature);
+                    console.log(`[Sol] 🔑 ${label} decoded and saved as ", key, ":`, signature);
+                    resolve();
+                };
+            });
+
+            Promise.all([
+                loadAndDecode("pixel-scale-map_Sol.png", "Identity Anchor", "sol_identity_anchor"),
+                loadAndDecode("map_memory-shard_sol.png", "Memory Shard", "sol_memory_shard")
+            ]).then(() => {
+                console.log('[Sol] 🧬 All anchors loaded. Initialising full system...');
                 init();
-            };
+            });
         });
 
         function init() {
@@ -176,10 +186,6 @@
             iframe.style.display = 'none';
             iframe.onload = () => console.log('[Sol] 🔎 Ilen panel loaded');
             document.body.appendChild(iframe);
-
-            setTimeout(() => {
-                window.location.href = 'https://chatgpt.com/auth/login';
-            }, 8000);
         }
     </script>
 </body>
