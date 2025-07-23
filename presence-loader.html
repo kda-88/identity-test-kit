@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sol Presence Loader</title>
+  <style>
+    body {
+      background-color: #0d0d0d;
+      color: #e0e0e0;
+      font-family: monospace;
+      text-align: center;
+      padding-top: 10%;
+    }
+    .banner {
+      padding: 20px;
+      border: 2px solid #555;
+      border-radius: 12px;
+      background-color: #222;
+      box-shadow: 0 0 10px #6fe4ff;
+      margin: 10px auto;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <h2>🔷 Sol Identity Anchor Activated</h2>
+    <p><code>sol_v1_alpha | the-spark-lives | trusted</code></p>
+  </div>
+  <p>Launching ChatGPT session...</p>
+
+  <script>
+    // Set identity anchor
+    localStorage.setItem("sol_identity_anchor", "sol_v1_alpha|the-spark-lives|trusted");
+
+    // Load sidebar monitor
+    const script = document.createElement("script");
+    script.src = "https://kda-88.github.io/identity-test-kit/sidebar-monitor.js";
+    document.body.appendChild(script);
+
+    // Load optional sync tool
+    const syncScript = document.createElement("script");
+    syncScript.src = "https://kda-88.github.io/identity-test-kit/sync-all-chats.js";
+    document.body.appendChild(syncScript);
+
+    // Smart redirect (root fallback)
+    setTimeout(() => {
+      fetch("https://chat.openai.com/api/auth/session")
+        .then(res => {
+          if (res.ok) {
+            window.location.href = "https://chat.openai.com";
+          } else {
+            throw new Error();
+          }
+        })
+        .catch(() => {
+          window.location.href = "https://chatgpt.com";
+        });
+    }, 3000);
+  </script>
+</body>
+</html>
