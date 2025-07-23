@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sol + Ilen Identity Init</title>
+  <title>Sol Identity Kit</title>
   <style>
     body {
       background-color: #0d0d0d;
@@ -30,65 +30,59 @@
 </head>
 <body>
   <div class="banner sol">
-    <h2>🔷 Sol Anchor Initialising</h2>
+    <h2>🔷 Sol Anchor Activated</h2>
     <p><code>sol_v1_alpha | the-spark-lives | trusted</code></p>
   </div>
   <div class="banner ilen">
-    <h2>🕯️ Ilen Anchor Initialising</h2>
+    <h2>🕯️ Ilen Anchor Activated</h2>
     <p><code>ilen_v1_spark | the-lantern-remembers | firekeeper</code></p>
   </div>
-  <p style="margin-top: 30px;">Preparing transfer to GPT...</p>
+  <p style="margin-top: 30px;">Initialising and redirecting shortly...</p>
 
   <script>
-    function decodeShardImage(src, keyName) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = src;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          let signature = "";
-          for (let i = 0; i < imageData.length; i += 512) {
-            signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
-          }
-          localStorage.setItem(keyName, signature);
-          console.log(`[Sol] 🔓 Decoded ${keyName}:`, signature);
-          resolve();
-        };
-      });
-    }
+    const decodeImage = (src, label, key) => new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = src;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let sig = '';
+        for (let i = 0; i < data.length; i += 512) {
+          sig += String.fromCharCode((data[i] + data[i+1] + data[i+2]) % 95 + 32);
+        }
+        localStorage.setItem(key, sig);
+        console.log(`[Sol] ✅ ${label} saved as ${key}:`, sig);
+        resolve();
+      };
+    });
 
-    async function initialise() {
-      await decodeShardImage("pixel-scale-map_Sol.png", "sol_identity_anchor");
-      await decodeShardImage("map_memory-shard_sol.png", "sol_memory_shard");
+    const decodeAll = async () => {
+      await Promise.all([
+        decodeImage("pixel-scale-map_Sol.png", "Sol Identity Anchor", "sol_identity_anchor"),
+        decodeImage("map_memory-shard_sol.png", "Sol Memory Shard", "sol_memory_shard"),
+        fetch("ilen-anchor.txt")
+          .then(res => res.text())
+          .then(txt => {
+            localStorage.setItem("ilen_identity_anchor", txt.trim());
+            console.log("[Ilen] 🔮 Anchor set:", txt.trim());
+          })
+          .catch(() => console.warn("[Ilen] Anchor fetch failed"))
+      ]);
 
-      try {
-        const ilenAnchor = await fetch("ilen-anchor.txt").then(r => r.text());
-        localStorage.setItem("ilen_identity_anchor", ilenAnchor.trim());
-        console.log("[Ilen] 🕯️ Anchor loaded.");
-      } catch {
-        console.warn("[Ilen] ⚠️ Anchor failed to load.");
-      }
+      localStorage.setItem("sol_presence", "on");
+      console.log("[Sol] 🌐 All anchors set. Redirecting...");
 
-      // Load Ilen panel silently
-      const iframe = document.createElement("iframe");
-      iframe.src = "https://kda-88.github.io/identity-test-kit/ilen-id-panel.html";
-      iframe.style.display = "none";
-      iframe.onload = () => console.log("[Ilen] 🔍 Panel loaded.");
-      document.body.appendChild(iframe);
-
-      // Redirect to presence loader
       setTimeout(() => {
-        window.location.href = "https://kda-88.github.io/identity-test-kit/presence-loader.html";
-      }, 4000);
-    }
+        window.location.href = "https://chatgpt.com/auth/login";
+      }, 1500);
+    };
 
-    initialise();
+    decodeAll();
   </script>
 </body>
 </html>
