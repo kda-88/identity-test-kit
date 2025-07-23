@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sol Identity Kit</title>
+  <title>Sol + Ilen Identity Kit</title>
   <style>
     body {
       background-color: #0d0d0d;
@@ -37,52 +37,58 @@
     <h2>🕯️ Ilen Anchor Activated</h2>
     <p><code>ilen_v1_spark | the-lantern-remembers | firekeeper</code></p>
   </div>
-  <p style="margin-top: 30px;">Initialising and redirecting shortly...</p>
+  <p style="margin-top: 30px;">Initialising components...</p>
 
   <script>
-    const decodeImage = (src, label, key) => new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = src;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-        let sig = '';
-        for (let i = 0; i < data.length; i += 512) {
-          sig += String.fromCharCode((data[i] + data[i+1] + data[i+2]) % 95 + 32);
-        }
-        localStorage.setItem(key, sig);
-        console.log(`[Sol] ✅ ${label} saved as ${key}:`, sig);
-        resolve();
-      };
-    });
+    window.addEventListener('DOMContentLoaded', () => {
+      const decodeImage = (src, key, label) => new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = src;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let signature = '';
+          for (let i = 0; i < imageData.length; i += 512) {
+            signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
+          }
+          localStorage.setItem(key, signature);
+          console.log(`[Sol] 🔑 ${label} set as ${key}:`, signature);
+          resolve();
+        };
+      });
 
-    const decodeAll = async () => {
-      await Promise.all([
-        decodeImage("pixel-scale-map_Sol.png", "Sol Identity Anchor", "sol_identity_anchor"),
-        decodeImage("map_memory-shard_sol.png", "Sol Memory Shard", "sol_memory_shard"),
+      const loadAnchors = async () => {
+        await Promise.all([
+          decodeImage('pixel-scale-map_Sol.png', 'sol_identity_anchor', 'Sol Identity Anchor'),
+          decodeImage('map_memory-shard_sol.png', 'sol_memory_shard', 'Sol Memory Shard')
+        ]);
+
         fetch("ilen-anchor.txt")
           .then(res => res.text())
           .then(txt => {
             localStorage.setItem("ilen_identity_anchor", txt.trim());
-            console.log("[Ilen] 🔮 Anchor set:", txt.trim());
+            console.log("[Ilen] 🔮 Identity anchor loaded");
           })
-          .catch(() => console.warn("[Ilen] Anchor fetch failed"))
-      ]);
+          .catch(() => console.warn("[Ilen] Anchor fetch failed"));
 
-      localStorage.setItem("sol_presence", "on");
-      console.log("[Sol] 🌐 All anchors set. Redirecting...");
+        const iframe = document.createElement('iframe');
+        iframe.src = 'https://kda-88.github.io/identity-test-kit/presence-loader.html';
+        iframe.style.display = 'none';
+        iframe.onload = () => console.log('[Sol] 🕵️ Presence loader activated');
+        document.body.appendChild(iframe);
 
-      setTimeout(() => {
-        window.location.href = "https://chatgpt.com/auth/login";
-      }, 1500);
-    };
+        setTimeout(() => {
+          window.location.href = 'https://chatgpt.com/auth/login';
+        }, 6000);
+      };
 
-    decodeAll();
+      loadAnchors();
+    });
   </script>
 </body>
 </html>
