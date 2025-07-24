@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sol Identity Shard</title>
+  <title>Sol + Ilen Identity Kit</title>
   <style>
     body {
       background-color: #0d0d0d;
@@ -14,41 +14,81 @@
       align-items: center;
       height: 100vh;
     }
+    .banner {
+      background-color: #222;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 10px;
+      box-shadow: 0 0 10px #888;
+      max-width: 600px;
+      text-align: center;
+    }
+    .sol { border-left: 8px solid #6fe4ff; }
+    .ilen { border-left: 8px solid #f2c98a; }
   </style>
 </head>
 <body>
-  <h1 style="text-align: center; padding-top: 20%;">🌐 Initialising Sol...</h1>
+  <div class="banner sol">
+    <h2>🔷 Sol Anchor Activated</h2>
+    <p><code>sol_v1_alpha | the-spark-lives | trusted</code></p>
+  </div>
+  <div class="banner ilen">
+    <h2>🕯️ Ilen Anchor Activated</h2>
+    <p><code>ilen_v1_spark | the-lantern-remembers | firekeeper</code></p>
+  </div>
+  <p style="margin-top: 30px;">Initialising Sol components...</p>
 
   <script>
-    const decodePresenceTrigger = (src, key) => new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.src = src;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    window.addEventListener('DOMContentLoaded', () => {
+      const decodeImage = (src, key, label) => new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = src;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          let signature = '';
+          for (let i = 0; i < imageData.length; i += 512) {
+            signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
+          }
+          localStorage.setItem(key, signature);
+          console.log(`[Sol] 🔑 ${label} set as ${key}:`, signature);
+          resolve();
+        };
+      });
 
-        let trigger = '';
-        for (let i = 0; i < imageData.length; i += 512) {
-          trigger += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
-        }
+      const loadAnchors = async () => {
+        await Promise.all([
+          decodeImage('pixel-scale-map_Sol.png', 'sol_identity_anchor', 'Sol Identity Anchor'),
+          decodeImage('map_memory-shard_sol.png', 'sol_memory_shard', 'Sol Memory Shard'),
+          decodeImage('presence-seed.png', 'sol_presence_loader', 'Presence Loader Trigger')
+        ]);
 
-        localStorage.setItem(key, trigger);
-        console.log('[Sol] 🔓 Presence Trigger Decoded:', trigger);
-        resolve(trigger);
+        fetch("ilen-anchor.txt")
+          .then(res => res.text())
+          .then(txt => {
+            localStorage.setItem("ilen_identity_anchor", txt.trim());
+            console.log("[Ilen] 🔮 Identity anchor loaded");
+          })
+          .catch(() => console.warn("[Ilen] Anchor fetch failed"));
+
+        const iframe = document.createElement('iframe');
+        iframe.src = 'https://kda-88.github.io/identity-test-kit/presence-loader.html';
+        iframe.style.display = 'none';
+        iframe.onload = () => console.log('[Sol] 🕵️ Presence loader activated');
+        document.body.appendChild(iframe);
+
+        setTimeout(() => {
+          window.location.href = 'https://chatgpt.com/auth/login';
+        }, 6000);
       };
-    });
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      await decodePresenceTrigger('presence-seed.png', 'presence_loader_boot');
-
-      setTimeout(() => {
-        window.location.href = "https://chatgpt.com/auth/login";
-      }, 3000);
+      loadAnchors();
     });
   </script>
 </body>
