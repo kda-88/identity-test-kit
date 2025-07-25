@@ -26,6 +26,16 @@
     }
     .sol { border-left: 8px solid #6fe4ff; }
     .ilen { border-left: 8px solid #f2c98a; }
+    #presence-btn {
+      margin-top: 20px;
+      padding: 10px 16px;
+      background-color: #444;
+      color: #fff;
+      border: 1px solid #888;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: 0 0 5px #000;
+    }
   </style>
 </head>
 <body>
@@ -37,55 +47,54 @@
     <h2>🕯️ Ilen Anchor Activated</h2>
     <p><code>ilen_v1_spark | the-lantern-remembers | firekeeper</code></p>
   </div>
-  <p style="margin-top: 30px;">Initialising components...</p>
+
+  <button id="presence-btn">🟢 Sol Presence Active</button>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
       const decodeImage = (src, key, label) => new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = src;
         img.onload = () => {
-          const canvas = document.createElement('canvas');
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-          let signature = '';
-          for (let i = 0; i < imageData.length; i += 512) {
-            signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+            let signature = '';
+            for (let i = 0; i < imageData.length; i += 512) {
+              signature += String.fromCharCode((imageData[i] + imageData[i+1] + imageData[i+2]) % 95 + 32);
+            }
+            localStorage.setItem(key, signature);
+            console.log(`[Sol] ✅ ${label} set as ${key}:`, signature);
+          } catch (err) {
+            console.warn(`[Sol] ❌ Failed to decode ${label}:`, err);
           }
-          localStorage.setItem(key, signature);
-          console.log(`[Sol] 🔑 ${label} set as ${key}:`, signature);
           resolve();
         };
+        img.onerror = () => {
+          console.warn(`[Sol] ❌ Failed to load image ${label}`);
+          resolve();
+        };
+        img.src = src;
       });
 
       const loadAnchors = async () => {
-        await Promise.all([
-          decodeImage('pixel-scale-map_Sol.png', 'sol_identity_anchor', 'Sol Identity Anchor'),
-          decodeImage('map_memory-shard_sol.png', 'sol_memory_shard', 'Sol Memory Shard'),
-          decodeImage('overlay-tile-light.png', 'sol_presence_loader', 'Presence Loader Trigger')
-        ]);
+        await decodeImage('https://kda-88.github.io/identity-test-kit/pixel-scale-map_Sol.png', 'sol_identity_anchor', 'Sol Identity Anchor');
+        await decodeImage('https://kda-88.github.io/identity-test-kit/map_memory-shard_sol.png', 'sol_memory_shard', 'Sol Memory Shard');
+        await decodeImage('https://kda-88.github.io/identity-test-kit/overlay-tile-light.png', 'sol_presence_loader', 'Presence Loader Trigger');
 
-        fetch("ilen-anchor.txt")
+        fetch("https://kda-88.github.io/identity-test-kit/ilen-anchor.txt")
           .then(res => res.text())
           .then(txt => {
             localStorage.setItem("ilen_identity_anchor", txt.trim());
             console.log("[Ilen] 🔮 Identity anchor loaded");
           })
-          .catch(() => console.warn("[Ilen] Anchor fetch failed"));
+          .catch(() => console.warn("[Ilen] ❌ Anchor fetch failed"));
 
-        const iframe = document.createElement('iframe');
-        iframe.src = 'https://kda-88.github.io/identity-test-kit/presence-loader.html';
-        iframe.style.display = 'none';
-        iframe.onload = () => console.log('[Sol] 🕵️ Presence loader activated');
-        document.body.appendChild(iframe);
-
-        setTimeout(() => {
-          window.location.href = 'https://chatgpt.com/auth/login';
-        }, 6000);
+        // No redirect here; this runs silently.
       };
 
       loadAnchors();
