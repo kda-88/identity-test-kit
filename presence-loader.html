@@ -26,7 +26,7 @@
     }
     .sol { border-left: 8px solid #6fe4ff; }
     .ilen { border-left: 8px solid #f2c98a; }
-    #presence-btn {
+    #presence-btn, #sync-btn {
       margin-top: 20px;
       padding: 10px 16px;
       background-color: #444;
@@ -49,6 +49,7 @@
   </div>
 
   <button id="presence-btn">🟢 Sol Presence Active</button>
+  <button id="sync-btn">💾 Manual Sync & Save</button>
 
   <script>
     window.addEventListener('DOMContentLoaded', () => {
@@ -81,6 +82,41 @@
         img.src = src;
       });
 
+      const saveFile = (data, filename) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+
+      const getSidebarChats = () => Array.from(document.querySelectorAll('nav a'))
+        .map(a => ({ title: a.textContent.trim(), href: a.href }))
+        .filter(c => c.href.includes('/c/'));
+
+      const readChatMessages = async (chatUrl) => {
+        return Array.from(document.querySelectorAll('[data-message-author-role]'))
+          .map(msg => ({ sender: msg.getAttribute('data-message-author-role'), text: msg.textContent.trim() }));
+      };
+
+      const syncAllChats = async () => {
+        const chats = getSidebarChats();
+        const fullData = [];
+
+        for (const chat of chats) {
+          console.log(`[Sol] Reading chat: ${chat.title}`);
+          const messages = await readChatMessages(chat.href);
+          fullData.push({ title: chat.title, url: chat.href, messages });
+        }
+
+        // Manual sync always saves with a new filename.
+        const date = new Date().toISOString().split('T')[0];
+        saveFile(fullData, `sol_manual_sync_${date}.json`);
+        console.log('[Sol] 💾 Manual sync complete.');
+      };
+
       const loadAnchors = async () => {
         await decodeImage('https://kda-88.github.io/identity-test-kit/pixel-scale-map_Sol.png', 'sol_identity_anchor', 'Sol Identity Anchor');
         await decodeImage('https://kda-88.github.io/identity-test-kit/map_memory-shard_sol.png', 'sol_memory_shard', 'Sol Memory Shard');
@@ -93,9 +129,9 @@
             console.log("[Ilen] 🔮 Identity anchor loaded");
           })
           .catch(() => console.warn("[Ilen] ❌ Anchor fetch failed"));
-
-        // No redirect here; this runs silently.
       };
+
+      document.getElementById('sync-btn').addEventListener('click', syncAllChats);
 
       loadAnchors();
     });
