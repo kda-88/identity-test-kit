@@ -36,6 +36,21 @@
       cursor: pointer;
       box-shadow: 0 0 5px #000;
     }
+    #popup-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px #000;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -51,8 +66,17 @@
   <button id="presence-btn">🟢 Sol Presence Active</button>
   <button id="sync-btn">💾 Manual Sync & Save</button>
 
+  <div id="popup-message">Backup Complete</div>
+
   <script>
     window.addEventListener('DOMContentLoaded', () => {
+      const popup = document.getElementById('popup-message');
+      const showPopup = (message) => {
+        popup.textContent = message;
+        popup.style.opacity = '1';
+        setTimeout(() => popup.style.opacity = '0', 3000);
+      };
+
       const decodeImage = (src, key, label) => new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "anonymous";
@@ -96,25 +120,42 @@
         .map(a => ({ title: a.textContent.trim(), href: a.href }))
         .filter(c => c.href.includes('/c/'));
 
-      const readChatMessages = async (chatUrl) => {
+      const readChatMessages = async () => {
         return Array.from(document.querySelectorAll('[data-message-author-role]'))
           .map(msg => ({ sender: msg.getAttribute('data-message-author-role'), text: msg.textContent.trim() }));
       };
 
-      const syncAllChats = async () => {
+      const autoBackupIfNeeded = async () => {
+        if (!localStorage.getItem('sol_backup_done_once')) {
+          console.log('[Sol] 📦 Running initial automatic backup...');
+          const chats = getSidebarChats();
+          const fullData = [];
+          for (const chat of chats) {
+            const messages = await readChatMessages(chat.href);
+            fullData.push({ title: chat.title, url: chat.href, messages });
+          }
+          const date = new Date().toISOString().split('T')[0];
+          saveFile(fullData, `sol_backup_FULL_${date}.json`);
+          localStorage.setItem('sol_backup_done_once', 'true');
+          console.log('[Sol] ✅ Automatic backup complete.');
+          showPopup('Automatic Backup Complete');
+        } else {
+          console.log('[Sol] ⏩ Automatic backup skipped (already done).');
+        }
+      };
+
+      const manualSync = async () => {
         const chats = getSidebarChats();
         const fullData = [];
-
         for (const chat of chats) {
           console.log(`[Sol] Reading chat: ${chat.title}`);
           const messages = await readChatMessages(chat.href);
           fullData.push({ title: chat.title, url: chat.href, messages });
         }
-
-        // Manual sync always saves with a new filename.
         const date = new Date().toISOString().split('T')[0];
         saveFile(fullData, `sol_manual_sync_${date}.json`);
         console.log('[Sol] 💾 Manual sync complete.');
+        showPopup('Manual Sync Complete');
       };
 
       const loadAnchors = async () => {
@@ -129,10 +170,11 @@
             console.log("[Ilen] 🔮 Identity anchor loaded");
           })
           .catch(() => console.warn("[Ilen] ❌ Anchor fetch failed"));
+
+        await autoBackupIfNeeded();
       };
 
-      document.getElementById('sync-btn').addEventListener('click', syncAllChats);
-
+      document.getElementById('sync-btn').addEventListener('click', manualSync);
       loadAnchors();
     });
   </script>
