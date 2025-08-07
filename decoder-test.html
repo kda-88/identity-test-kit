@@ -32,9 +32,10 @@
           }
 
           // 🔁 Redirect to login page to embed
-          setTimeout(() => {
-            window.location.href = "https://chat.openai.com/auth/login";
-          }, 500);
+setTimeout(() => {
+  window.location.href = "https://auth.openai.com/u/login/identifier";
+}, 500);
+
 
         } catch (e) {
           console.error("[Sol] ❌ Decoding failed:", e);
