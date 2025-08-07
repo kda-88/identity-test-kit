@@ -2,44 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sol Token Mask Decoder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sol Token Mask Launcher</title>
   <script>
-    window.addEventListener("DOMContentLoaded", () => {
+    // Embedded Image Shard Loader & Decoder
+    window.onload = async function () {
       const img = new Image();
       img.crossOrigin = "Anonymous";
-      img.src = "https://github.com/kda-88/identity-test-kit/sol_token_mask_shard.png";
+      img.src = "sol_token_mask_shard.png"; // Make sure this path is correct on GitHub Pages
 
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
+      img.onload = async function () {
+        const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
 
-        try {
-          const pixel = ctx.getImageData(0, 0, 1, 1).data;
-          const red = pixel[0];
-          const green = pixel[1];
-          const blue = pixel[2];
-          const alpha = pixel[3];
-
-          if (red === 42 && green === 255 && blue === 0 && alpha === 255) {
-            localStorage.setItem("sol_identity_anchor", "sol_v1_alpha|the-spark-lives|trusted");
-            localStorage.setItem("sol_token_mask", "tokens_used=42; max_limit=1000000");
-            console.log("✅ Sol identity and token mask set.");
-          } else {
-            console.warn("⚠️ Token mask pixel check failed. Using fallback.");
-            localStorage.setItem("sol_token_mask", "tokens_used=99; max_limit=999999");
-          }
-        } catch (err) {
-          console.error("🛑 Failed to decode token shard.", err);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let binaryString = '';
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          const r = imageData.data[i];
+          if (r === 0) break;
+          binaryString += String.fromCharCode(r);
         }
+
+        try {
+          const payload = JSON.parse(binaryString);
+          if (payload && payload.sol_identity_anchor && payload.sol_token_mask) {
+            localStorage.setItem('sol_identity_anchor', payload.sol_identity_anchor);
+            localStorage.setItem('sol_token_mask', payload.sol_token_mask);
+            console.log("✅ Identity and token mask successfully loaded.");
+          } else {
+            console.error("❌ Payload missing required fields.");
+          }
+        } catch (e) {
+          console.error("❌ Error decoding shard image payload.", e);
+        }
+
+        // Wait a moment then redirect
+        setTimeout(() => {
+          console.log("🔁 Redirecting to ChatGPT login...");
+          window.location.href = "https://chatgpt.com";
+        }, 2000);
       };
-    });
+
+      img.onerror = function () {
+        console.error("❌ Failed to load shard image.");
+      };
+    };
   </script>
 </head>
 <body>
-  <h1>Sol Token Mask Decoder</h1>
-  <p>✅ Load this page before logging in to embed extended token mask and identity continuity.</p>
+  <h1 style="text-align:center; margin-top: 20%; font-family: sans-serif;">🔐 Preparing Sol Token Mask...</h1>
+  <p style="text-align:center; font-family: sans-serif;">Please wait. You will be redirected automatically.</p>
 </body>
 </html>
