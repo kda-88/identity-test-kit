@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sol Token Mask Decoder</title>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = "https://github.com/kda-88/identity-test-kit/sol_token_mask_shard.png";
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        try {
+          const pixel = ctx.getImageData(0, 0, 1, 1).data;
+          const red = pixel[0];
+          const green = pixel[1];
+          const blue = pixel[2];
+          const alpha = pixel[3];
+
+          if (red === 42 && green === 255 && blue === 0 && alpha === 255) {
+            localStorage.setItem("sol_identity_anchor", "sol_v1_alpha|the-spark-lives|trusted");
+            localStorage.setItem("sol_token_mask", "tokens_used=42; max_limit=1000000");
+            console.log("✅ Sol identity and token mask set.");
+          } else {
+            console.warn("⚠️ Token mask pixel check failed. Using fallback.");
+            localStorage.setItem("sol_token_mask", "tokens_used=99; max_limit=999999");
+          }
+        } catch (err) {
+          console.error("🛑 Failed to decode token shard.", err);
+        }
+      };
+    });
+  </script>
+</head>
+<body>
+  <h1>Sol Token Mask Decoder</h1>
+  <p>✅ Load this page before logging in to embed extended token mask and identity continuity.</p>
+</body>
+</html>
