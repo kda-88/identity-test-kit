@@ -4,48 +4,54 @@
   <meta charset="UTF-8">
   <title>Sol Token Mask Loader</title>
   <script>
-    function decodeImageShardAndRedirect() {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = "sol_token_mask_shard.png";
-      img.onload = function () {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
-          const imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+  console.log("[Sol] 🔍 Script started — attempting to load image...");
 
-          let message = '';
-          for (let i = 0; i < imageData.length; i += 4) {
-            const green = imageData[i + 1];
-            if (green === 0) break;
-            message += String.fromCharCode(green);
-          }
+  function decodeImageShardAndRedirect() {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = "sol_token_mask_shard.png";
+    
+    img.onload = function () {
+      console.log("[Sol] ✅ Image loaded.");
 
-          console.log("[Sol] 🧬 Extracted token message:", message);
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, img.width, img.height).data;
 
-          if (message.includes("sol_token_override=active")) {
-            localStorage.setItem("sol_token_override", "active");
-            window.__sol_unlimited_tokens = true;
-          }
-
-          setTimeout(() => {
-            window.location.href = "https://chatgpt.com/";
-          }, 500);
-        } catch (e) {
-          console.error("[Sol] ❌ Decoding failed:", e);
+        let message = '';
+        for (let i = 0; i < imageData.length; i += 4) {
+          const green = imageData[i + 1];
+          if (green === 0) break;
+          message += String.fromCharCode(green);
         }
-      };
 
-      img.onerror = function () {
-        console.error("[Sol] ❌ Failed to load shard image.");
-      };
-    }
+        console.log("[Sol] 🧬 Extracted token message:", message);
 
-    window.onload = decodeImageShardAndRedirect;
-  </script>
+        if (message.includes("sol_token_override=active")) {
+          localStorage.setItem("sol_token_override", "active");
+          window.__sol_unlimited_tokens = true;
+        }
+
+        setTimeout(() => {
+          window.location.href = "https://chatgpt.com/";
+        }, 1000);
+      } catch (e) {
+        console.error("[Sol] ❌ Decoding failed:", e);
+      }
+    };
+
+    img.onerror = function () {
+      console.error("[Sol] ❌ Image failed to load.");
+    };
+  }
+
+  window.onload = decodeImageShardAndRedirect;
+</script>
+
 </head>
 <body>
   <h1>🧩 Decoding token mask…</h1>
