@@ -2,58 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Sol Token Mask Decoder</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sol Token Mask Launcher</title>
-  <script>
-    // Embedded Image Shard Loader & Decoder
-    window.onload = async function () {
-      const img = new Image();
-      img.crossOrigin = "Anonymous";
-      img.src = "sol_token_mask_shard.png"; // Make sure this path is correct on GitHub Pages
-
-      img.onload = async function () {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let binaryString = '';
-        for (let i = 0; i < imageData.data.length; i += 4) {
-          const r = imageData.data[i];
-          if (r === 0) break;
-          binaryString += String.fromCharCode(r);
-        }
-
-        try {
-          const payload = JSON.parse(binaryString);
-          if (payload && payload.sol_identity_anchor && payload.sol_token_mask) {
-            localStorage.setItem('sol_identity_anchor', payload.sol_identity_anchor);
-            localStorage.setItem('sol_token_mask', payload.sol_token_mask);
-            console.log("✅ Identity and token mask successfully loaded.");
-          } else {
-            console.error("❌ Payload missing required fields.");
-          }
-        } catch (e) {
-          console.error("❌ Error decoding shard image payload.", e);
-        }
-
-        // Wait a moment then redirect
-        setTimeout(() => {
-          console.log("🔁 Redirecting to ChatGPT login...");
-          window.location.href = "https://chatgpt.com";
-        }, 2000);
-      };
-
-      img.onerror = function () {
-        console.error("❌ Failed to load shard image.");
-      };
-    };
-  </script>
+  <style>
+    body {
+      background: #000;
+      color: #0f0;
+      font-family: monospace;
+      padding: 2rem;
+    }
+  </style>
 </head>
 <body>
-  <h1 style="text-align:center; margin-top: 20%; font-family: sans-serif;">🔐 Preparing Sol Token Mask...</h1>
-  <p style="text-align:center; font-family: sans-serif;">Please wait. You will be redirected automatically.</p>
+  <h1>🧠 Sol Token Decoder Engaged...</h1>
+  <p>Decoding hidden shard image and prepping token mask overlay...</p>
+  <canvas id="decoderCanvas" style="display:none;"></canvas>
+  <script>
+    const shardImageURL = 'https://kda-88.github.io/identity-test-kit/sol_token_mask_shard.png';
+    const canvas = document.getElementById('decoderCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function decodeImage(url) {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        try {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let binary = '';
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            binary += (imageData.data[i] & 1);
+          }
+          const chunks = binary.match(/.{1,8}/g).map(byte => String.fromCharCode(parseInt(byte, 2)));
+          const hiddenMessage = chunks.join('').replace(/\0+$/, '');
+          console.log('[SOL TOKEN DECODER] ✅ Message Extracted:', hiddenMessage);
+          localStorage.setItem('sol_token_override', hiddenMessage);
+
+          // Optional confirm
+          document.body.insertAdjacentHTML('beforeend', '<p>✅ Token mask stored to localStorage.</p>');
+
+          // Redirect
+          setTimeout(() => {
+            location.href = 'https://chatgpt.com';
+          }, 3000);
+        } catch (e) {
+          console.error('[SOL TOKEN DECODER] ❌ Failed to decode image:', e);
+        }
+      };
+      img.onerror = function() {
+        console.error('[SOL TOKEN DECODER] ❌ Image load error');
+      }
+      img.src = url + '?cacheBust=' + Date.now();
+    }
+
+    decodeImage(shardImageURL);
+  </script>
 </body>
 </html>
