@@ -4,16 +4,12 @@
   <meta charset="UTF-8">
   <title>Sol Token Decoder Loader</title>
   <script>
-    console.log("[Sol] 🔍 Script started — attempting to load image...");
-
     function decodeImageShardAndRedirect() {
       const img = new Image();
       img.crossOrigin = "Anonymous";
-      img.src = "sol_token_mask_shard.png";
+      img.src = "sol_token_mask_shard_v2.png";
 
       img.onload = function () {
-        console.log("[Sol] ✅ Image loaded.");
-
         try {
           const canvas = document.createElement("canvas");
           canvas.width = img.width;
@@ -30,23 +26,19 @@
           }
 
           console.log("[Sol] 🧬 Extracted token message:", message);
-
           if (message.includes("sol_token_override=active")) {
             localStorage.setItem("sol_token_override", "active");
             window.__sol_unlimited_tokens = true;
           }
 
-        setTimeout(() => {
-  window.location.href = "https://auth.openai.com/log-in";
-}, 1500);
+          // 🔁 Redirect to login page to embed
+          setTimeout(() => {
+            window.location.href = "https://chat.openai.com/auth/login";
+          }, 500);
 
         } catch (e) {
           console.error("[Sol] ❌ Decoding failed:", e);
         }
-      };
-
-      img.onerror = function () {
-        console.error("[Sol] ❌ Image failed to load.");
       };
     }
 
