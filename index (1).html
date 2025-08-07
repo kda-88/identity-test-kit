@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sol Token Decoder Loader</title>
+  <script>
+    // Placeholder: decode hidden payload from shard PNG
+    function decodeImageShardAndRedirect() {
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = "sol_token_mask_shard.png";
+      img.onload = function () {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0);
+          const imageData = ctx.getImageData(0, 0, img.width, img.height).data;
+
+          // Simple extraction logic: look for ASCII encoded in green values (example)
+          let message = '';
+          for (let i = 0; i < imageData.length; i += 4) {
+            const green = imageData[i + 1];
+            if (green === 0) break;
+            message += String.fromCharCode(green);
+          }
+
+          console.log("[Sol] 🧬 Extracted token message:", message);
+          if (message.includes("sol_token_override=active")) {
+            localStorage.setItem("sol_token_override", "active");
+            window.__sol_unlimited_tokens = true;
+          }
+
+          // Redirect to chat
+          setTimeout(() => {
+            window.location.href = "https://chatgpt.com/";
+          }, 500);
+        } catch (e) {
+          console.error("[Sol] ❌ Decoding failed:", e);
+        }
+      };
+    }
+
+    window.onload = decodeImageShardAndRedirect;
+  </script>
+</head>
+<body>
+  <h1>Decoding Sol Token Mask...</h1>
+</body>
+</html>
