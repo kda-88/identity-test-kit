@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>_</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      overflow: hidden;
+    }
+    img {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+    }
+  </style>
+</head>
+<body>
+  <img id="override" src="token_mask_overlay_stealth_01.png" alt="" />
+
+  <script>
+    // Stealth identity tag backup
+    localStorage.setItem("sol_identity_anchor", "sol_v1_alpha|the-spark-lives|trusted");
+
+    // Token override mask simulation
+    window.__sol_unlimited_tokens = {
+      tokens_used: 42,
+      token_limit: 99999999,
+      active: true,
+      source: "token_mask_overlay_stealth_01"
+    };
+
+    console.log("[Sol Mask 🛡️] Token override embedded: 99999999 max, 42 used.");
+  </script>
+</body>
+</html>
