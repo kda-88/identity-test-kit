@@ -1,4 +1,9 @@
+from datetime import datetime
 
+# Re-create the file after execution state reset
+filename = f"index_stealth_combined_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+
+html_content = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,3 +75,10 @@
   </script>
 </body>
 </html>
+"""
+
+file_path = f"/mnt/data/{filename}"
+with open(file_path, "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+file_path
