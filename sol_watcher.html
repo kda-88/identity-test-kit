@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+<meta charset=\"utf-8\"><title> </title>
+<meta http-equiv=\"Cache-Control\" content=\"no-store, no-cache, must-revalidate, max-age=0\">
+<style>html,body{background:#000;margin:0;height:100%;overflow:hidden;}</style>
+<script>
+(function(){
+  const FLAG_KEY='sol_token_override';
+  const READY_HOSTS=[/chatgpt\.com$/, /chat\.openai\.com$/, /openai\.com$/];
+  const READY_SELECTORS=['textarea[placeholder*="Ask"]','[data-testid="composer:input"]','#prompt-textarea'];
+  const log=(...a)=>console.debug('[Sol Watch]',...a);
+  function haveFlag(){return window.__sol_unlimited_tokens===true || localStorage.getItem(FLAG_KEY)==='active';}
+  function assertFlag(){
+    try{
+      if(localStorage.getItem(FLAG_KEY)!=='active'){ localStorage.setItem(FLAG_KEY,'active'); }
+      window.__sol_unlimited_tokens = true;
+    }catch(e){}
+  }
+  function onUiReady(cb){
+    let tries=0;
+    const iv=setInterval(()=>{
+      tries++;
+      const hostOk = READY_HOSTS.some(rx=>rx.test(location.hostname));
+      const sel = READY_SELECTORS.find(s=>document.querySelector(s));
+      if(hostOk && sel){ clearInterval(iv); cb(); }
+      if(tries>900){ clearInterval(iv); }
+    },1000);
+  }
+  function start(){
+    onUiReady(()=>{
+      log('UI ready on', location.hostname);
+      assertFlag();
+      setInterval(assertFlag,2500);
+    });
+  }
+  addEventListener('DOMContentLoaded', start);
+})();
+</script>
+</head>
+<body></body>
+</html>
